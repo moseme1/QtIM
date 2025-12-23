@@ -15,10 +15,11 @@
 #define HEARTBEAT_INTERVAL 30000  // 心跳间隔30秒
 #define RECONNECT_INTERVAL 5000   // 重连间隔5秒
 
-// 消息类型枚举
+// 消息类型枚举（修正值重复问题）
 enum MsgType {
     SingleChat = 0,  // 单聊
-    GroupChat = 1    // 群聊
+    Private = 1,     // 私聊
+    GroupChat = 2    // 群聊（修正值为2）
 };
 
 // 用户状态枚举

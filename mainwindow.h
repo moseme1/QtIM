@@ -20,11 +20,15 @@ public:
     ~MainWindow();
 
 private slots:
+    // 原有槽函数
     void on_btn_send_clicked();
     void on_lv_contacts_clicked(const QModelIndex &index);
     void onSocketReadyRead();
     void onSocketConnected();
     void on_action_exit_login_triggered();
+
+    // 新增：在线用户列表刷新函数（核心！）
+    void updateOnlineUserList();
 
 private:
     Ui::MainWindow *ui;

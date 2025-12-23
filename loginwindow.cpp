@@ -41,6 +41,18 @@ LoginWindow::LoginWindow(QWidget *parent) :
     // 4. 绑定DataManager的信号
     connect(DataManager::getInstance(), &DataManager::loginSuccess, this, [=](const QString &n, int id){
         ui->label_tip->setText("登录成功，欢迎" + n);
+
+        // ========== 新增：登录成功后添加到在线用户表 ==========
+        // 获取当前登录的账号（用于在线表存储）
+        QString loginAccount = ui->le_account->text().trimmed();
+        // 调用DataManager的接口添加在线用户（后续需在DataManager中实现该接口）
+        bool addOnlineOk = DataManager::getInstance()->addOnlineUser(id, loginAccount);
+        if (addOnlineOk) {
+            qDebug() << "添加在线用户成功：" << loginAccount << "(ID:" << id << ")";
+        } else {
+            qDebug() << "添加在线用户失败：" << loginAccount;
+        }
+
         // 修正1：变量名错误（nickName → n，n是DataManager传递的用户名）
         emit loginFinish(n); // 发送QString类型的用户名，匹配信号声明
         this->close();

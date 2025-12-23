@@ -6,44 +6,93 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>500</width>
+    <width>600</width>  <!-- 加宽窗口适配列表 -->
     <height>400</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>聊天窗口</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QHBoxLayout" name="horizontalLayout_2"> <!-- 改为水平布局 -->
    <item>
-    <widget class="QTextEdit" name="te_msg_display">
-     <property name="readOnly">
+    <!-- 新增：在线用户列表 -->
+    <widget class="QListWidget" name="lw_online_users">
+     <property name="minimumSize">
+      <size>
+       <width>150</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>200</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <property name="horizontalScrollBarPolicy">
+      <enum>Qt::ScrollBarAlwaysOff</enum>
+     </property>
+     <property name="verticalScrollBarPolicy">
+      <enum>Qt::ScrollBarAsNeeded</enum>
+     </property>
+     <property name="currentRow">
+      <number>-1</number>
+     </property>
+     <property name="selectionMode">
+      <enum>QAbstractItemView::SingleSelection</enum>
+     </property>
+     <property name="defaultDropAction">
+      <enum>Qt::IgnoreAction</enum>
+     </property>
+     <property name="horizontalScrollMode">
+      <enum>QAbstractItemView::ScrollPerPixel</enum>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+     <property name="textElideMode">
+      <enum>Qt::ElideRight</enum>
+     </property>
+     <property name="uniformItemSizes">
       <bool>true</bool>
      </property>
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
+    <layout class="QVBoxLayout" name="verticalLayout">
      <item>
-      <widget class="QLineEdit" name="le_msg_input">
-       <property name="placeholderText">
-        <string>请输入消息...</string>
+      <widget class="QTextEdit" name="te_msg_display">
+       <property name="readOnly">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="btn_send">
-       <property name="text">
-        <string>发送</string>
-       </property>
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-      </widget>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QLineEdit" name="le_msg_input">
+         <property name="placeholderText">
+          <string>请输入消息...</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btn_send">
+         <property name="text">
+          <string>发送</string>
+         </property>
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
     </layout>
    </item>
   </layout>
  </widget>
  <resources/>
+ <!-- 核心修改：删除所有自动信号绑定，改为代码手动绑定 -->
  <connections/>
 </ui>

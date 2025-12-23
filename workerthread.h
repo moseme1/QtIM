@@ -16,6 +16,8 @@ public:
     void connectToServer();
     void disconnectFromServer();
     void sendMessage(const QString &msg);
+    // ========== 核心新增：判断是否已连接服务器 ==========
+    bool isConnected() const;
 
 signals:
     void connected();
