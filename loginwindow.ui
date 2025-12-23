@@ -60,7 +60,7 @@
         <string>请输入2-10位昵称</string>
        </property>
        <property name="visible">
-        <bool>false</bool>
+        <bool>ture</bool>
        </property>
       </widget>
      </item>
