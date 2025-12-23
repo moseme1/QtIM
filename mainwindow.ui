@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
+    <width>1100</width> <!-- 仅加宽窗口，适配广播区域 -->
     <height>600</height>
    </rect>
   </property>
@@ -15,6 +15,7 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout">
+    <!-- 原有：左侧联系人列表 -->
     <item>
      <widget class="QListView" name="lv_contacts">
       <property name="minimumSize">
@@ -25,10 +26,12 @@
       </property>
      </widget>
     </item>
+
+    <!-- 原有：中间私聊窗口 -->
     <item>
      <widget class="QStackedWidget" name="stacked_chat">
       <property name="currentIndex">
-       <number>0</number> <!-- 改为0，默认显示page_default -->
+       <number>0</number>
       </property>
       <widget class="QWidget" name="page_default">
        <layout class="QVBoxLayout" name="verticalLayout">
@@ -42,7 +45,6 @@
           </property>
          </widget>
         </item>
-        <!-- 新增：聊天消息显示区 -->
         <item>
          <widget class="QTextBrowser" name="browser_chat">
           <property name="minimumSize">
@@ -53,7 +55,6 @@
           </property>
          </widget>
         </item>
-        <!-- 新增：消息输入+发送按钮 -->
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
@@ -85,14 +86,80 @@
       </widget>
      </widget>
     </item>
+
+    <!-- 新增：右侧固定广播窗口（仅加这部分，不改动原有代码） -->
+    <item>
+     <widget class="QWidget" name="widget_broadcast">
+      <property name="minimumSize">
+       <size>
+        <width>300</width>
+        <height>0</height>
+       </size>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_broadcast">
+        <!-- 广播标题 -->
+        <item>
+         <widget class="QLabel" name="label_broadcast_title">
+          <property name="text">
+           <string>全员广播</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <!-- 广播消息显示区 -->
+        <item>
+         <widget class="QTextBrowser" name="browser_broadcast">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>400</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <!-- 广播输入+发送 -->
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_broadcast">
+          <item>
+           <widget class="QTextEdit" name="edit_broadcast_input">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>80</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btn_broadcast_send">
+            <property name="text">
+             <string>发送广播</string>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>80</width>
+              <height>0</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+     </widget>
+    </item>
    </layout>
   </widget>
+
+  <!-- 原有菜单栏，完全不动 -->
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>1100</width> <!-- 仅同步窗口宽度 -->
      <height>23</height>
     </rect>
    </property>
