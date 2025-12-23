@@ -5,6 +5,8 @@
 #include <QTcpSocket>
 // 新增：包含ListView模型头文件
 #include <QStandardItemModel>
+// 新增：包含QMap容器头文件（必须，否则m_accountToUserId报错）
+#include <QMap>
 #include <QMainWindow>
 
 QT_BEGIN_NAMESPACE
@@ -34,7 +36,9 @@ private:
     Ui::MainWindow *ui;
     QTcpSocket *m_socket;               // 网络Socket（声明）
     QString m_loginUser;                // 当前登录用户名（声明）
-    QString m_currentChatUser;          // 当前选中的联系人（声明）
+    QString m_currentChatUser;          // 当前选中的联系人账号
+    int m_currentChatUserId;            // 新增：当前选中的联系人ID（关键！）
     QStandardItemModel *m_contactModel; // ListView数据源模型（声明）
+    QMap<QString, int> m_accountToUserId; // 账号→用户ID映射
 };
 #endif // MAINWINDOW_H
