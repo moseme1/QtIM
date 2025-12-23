@@ -1,69 +1,117 @@
-#include "mainwindow.h"
-#include "ui_mainwindow.h"
-#include "datamanager.h"
-#include "chatwindow.h"
-#include "loginwindow.h"
-#include <QModelIndex>
+#include "MainWindow.h"
+#include "ui_MainWindow.h"
+#include <QDebug>
+#include <QStandardItem>
+#include <QStandardItem>
 
-// 构造函数
-MainWindow::MainWindow(int userId, QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow()),
-    m_currentUserId(userId)
+MainWindow::MainWindow(QString loginUser, QWidget *parent)
+    : QMainWindow(parent)
+    , ui(new Ui::MainWindow)
+    , m_loginUser(loginUser)
+    , m_currentChatUser("")
 {
-    // 加载UI布局
     ui->setupUi(this);
-    // 获取业务层单例
-    m_dataMgr = DataManager::getInstance();
+    this->setWindowTitle(QString("QtIM - %1").arg(m_loginUser));
 
-    // 绑定联系人Model到ListView（显示昵称列）
-    ui->lv_contacts->setModel(m_dataMgr->getContactModel());
-    ui->lv_contacts->setModelColumn(1);
+    // ========== 1. 初始化联系人列表（QListView） ==========
+    m_contactModel = new QStandardItemModel(this);
+    // 添加测试联系人
+    QStringList contacts = {"用户A", "用户B", "用户C"};
+    for(const QString &name : contacts){
+        QStandardItem *item = new QStandardItem(name);
+        m_contactModel->appendRow(item);
+    }
+    ui->lv_contacts->setModel(m_contactModel);
 
-    // 设置窗口标题（显示当前用户ID）
-    setWindowTitle(QString("QtIM - 用户%1").arg(userId));
+    // ========== 2. 初始化网络连接 ==========
+    m_socket = new QTcpSocket(this);
+    // 连接本地服务器（IP/端口根据实际修改）
+    m_socket->connectToHost("127.0.0.1", 8888);
+    // 绑定网络信号
+    connect(m_socket, &QTcpSocket::connected, this, &MainWindow::onSocketConnected);
+    connect(m_socket, &QTcpSocket::readyRead, this, &MainWindow::onSocketReadyRead);
+
+    // ========== 3. 初始化聊天区域 ==========
+    ui->browser_chat->setVisible(false); // 未选联系人时隐藏聊天区
+    ui->edit_input->setVisible(false);
+    ui->btn_send->setVisible(false);
 }
 
-// 析构函数
 MainWindow::~MainWindow()
 {
-    // 释放UI对象
     delete ui;
+    if(m_socket->isOpen()){
+        m_socket->close();
+    }
 }
 
-// 联系人列表点击事件（自动关联UI控件 lv_contacts）
+// 联系人列表点击（QListView）
 void MainWindow::on_lv_contacts_clicked(const QModelIndex &index)
 {
-    // 获取选中联系人的ID（从ContactModel的IdRole获取）
-    int friendId = index.data(257).toInt(); // IdRole = Qt::UserRole +1 = 257
+    // 获取选中的联系人名称
+    m_currentChatUser = index.data().toString();
+    // 更新提示文字
+    ui->label_tip->setText(QString("与%1聊天中").arg(m_currentChatUser));
+    // 显示聊天控件
+    ui->browser_chat->setVisible(true);
+    ui->edit_input->setVisible(true);
+    ui->btn_send->setVisible(true);
+    // 清空输入框
+    ui->edit_input->clear();
+}
 
-    // 若已打开该联系人的聊天窗口，直接切换
-    if (m_chatWindows.contains(friendId)) {
-        ui->stacked_chat->setCurrentWidget(m_chatWindows[friendId]);
+// 发送按钮点击
+void MainWindow::on_btn_send_clicked()
+{
+    // 1. 校验
+    QString msgContent = ui->edit_input->toPlainText().trimmed();
+    if(msgContent.isEmpty()) return;
+    if(m_currentChatUser.isEmpty()){
+        ui->browser_chat->append("系统：请先选择联系人！");
+        return;
+    }
+    if(!m_socket->isWritable()){
+        ui->browser_chat->append("系统：未连接到服务器！");
         return;
     }
 
-    // 未打开则创建新的聊天窗口
-    ChatWindow *chatWin = new ChatWindow(m_currentUserId, friendId);
-    // 缓存聊天窗口
-    m_chatWindows[friendId] = chatWin;
-    // 添加到堆叠窗口并切换
-    ui->stacked_chat->addWidget(chatWin);
-    ui->stacked_chat->setCurrentWidget(chatWin);
+    // 2. 显示自己的消息
+    ui->browser_chat->append(QString("我：%1").arg(msgContent));
+    ui->edit_input->clear();
 
-    // 加载该联系人的历史消息
-    m_dataMgr->loadMessageHistory(m_currentUserId, friendId);
+    // 3. 封装消息并发送到服务器
+    QString sendMsg = QString("%1|%2|%3")
+                          .arg(m_loginUser)
+                          .arg(m_currentChatUser)
+                          .arg(msgContent);
+    m_socket->write(sendMsg.toUtf8());
 }
 
-// 退出登录菜单点击事件（自动关联UI控件 action_exit_login）
+// 连接服务器成功
+void MainWindow::onSocketConnected()
+{
+    ui->browser_chat->append("系统：已连接到聊天服务器！");
+}
+
+// 接收服务器消息
+void MainWindow::onSocketReadyRead()
+{
+    QByteArray data = m_socket->readAll();
+    QString recvMsg = QString::fromUtf8(data);
+
+    QStringList parts = recvMsg.split("|");
+    if(parts.size() == 2){
+        // 正常聊天消息：对方用户名|内容
+        ui->browser_chat->append(QString("%1：%2").arg(parts[0]).arg(parts[1]));
+    } else {
+        // 系统提示
+        ui->browser_chat->append(QString("系统：%1").arg(recvMsg));
+    }
+}
+
+// 退出登录
 void MainWindow::on_action_exit_login_triggered()
 {
-    // 断开网络连接
-    NetworkManager::getInstance()->disconnectServer();
-    // 关闭主窗口
+    // 关闭主窗口，返回登录界面（可根据你的逻辑修改）
     this->close();
-
-    // 重新打开登录窗口
-    LoginWindow *loginWin = new LoginWindow();
-    loginWin->show();
 }

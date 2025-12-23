@@ -3,9 +3,7 @@
 
 #include <QWidget>
 
-namespace Ui {
-class LoginWindow;
-}
+namespace Ui { class LoginWindow; }
 
 class LoginWindow : public QWidget
 {
@@ -15,11 +13,11 @@ public:
     explicit LoginWindow(QWidget *parent = nullptr);
     ~LoginWindow();
 
+    // 核心：添加loginFinish信号声明（QString类型参数）
 signals:
-    void loginFinish(int userId); // 仅保留登录成功的信号
+    void loginFinish(const QString &userName);
 
 private:
     Ui::LoginWindow *ui;
 };
-
 #endif // LOGINWINDOW_H

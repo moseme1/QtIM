@@ -28,7 +28,7 @@
     <item>
      <widget class="QStackedWidget" name="stacked_chat">
       <property name="currentIndex">
-       <number>-1</number>
+       <number>0</number> <!-- 改为0，默认显示page_default -->
       </property>
       <widget class="QWidget" name="page_default">
        <layout class="QVBoxLayout" name="verticalLayout">
@@ -41,6 +41,45 @@
            <set>Qt::AlignCenter</set>
           </property>
          </widget>
+        </item>
+        <!-- 新增：聊天消息显示区 -->
+        <item>
+         <widget class="QTextBrowser" name="browser_chat">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>400</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <!-- 新增：消息输入+发送按钮 -->
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <widget class="QTextEdit" name="edit_input">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>80</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btn_send">
+            <property name="text">
+             <string>发送</string>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>80</width>
+              <height>0</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
        </layout>
       </widget>

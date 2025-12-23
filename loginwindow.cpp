@@ -41,7 +41,8 @@ LoginWindow::LoginWindow(QWidget *parent) :
     // 4. 绑定DataManager的信号
     connect(DataManager::getInstance(), &DataManager::loginSuccess, this, [=](const QString &n, int id){
         ui->label_tip->setText("登录成功，欢迎" + n);
-        emit loginFinish(id);
+        // 修正1：变量名错误（nickName → n，n是DataManager传递的用户名）
+        emit loginFinish(n); // 发送QString类型的用户名，匹配信号声明
         this->close();
     });
     connect(DataManager::getInstance(), &DataManager::loginFailed, this, [=](const QString &r){

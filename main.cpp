@@ -12,9 +12,10 @@ int main(int argc, char *argv[])
 
     // 创建登录窗口
     LoginWindow *loginWin = new LoginWindow();
-    // 登录成功后打开主窗口
-    QObject::connect(loginWin, &LoginWindow::loginFinish, [=](int userId) {
-        MainWindow *mainWin = new MainWindow(userId);
+    // 登录成功后打开主窗口（传递用户名，而非int的userId）
+    QObject::connect(loginWin, &LoginWindow::loginFinish, [=](const QString &userName) {
+        // 修正：传入QString类型的用户名，匹配MainWindow构造函数
+        MainWindow *mainWin = new MainWindow(userName);
         mainWin->show();
     });
     // 显示登录窗口
