@@ -20,12 +20,13 @@ MainWindow::MainWindow(QString loginUser, QWidget *parent)
     m_contactModel = new QStandardItemModel(this);
     ui->lv_contacts->setModel(m_contactModel);
 
+    // 注释DataManager绑定（避免与服务器广播冲突，仅改这里）
+    // connect(DataManager::getInstance(), &DataManager::onlineUserUpdated, this, [=]() {
+    //     updateOnlineUserList();
+    // });
 
-     connect(DataManager::getInstance(), &DataManager::onlineUserUpdated, this, [=]() {
-         updateOnlineUserList();
-     });
-
-     updateOnlineUserList();
+    // 注释手动刷新（仅改这里）
+    // updateOnlineUserList();
 
     // ========== 2. 初始化网络连接 ==========
     m_socket = new QTcpSocket(this);
@@ -132,80 +133,7 @@ void MainWindow::on_btn_broadcast_send_clicked()
     qDebug() << "[发送广播] 格式：" << broadcastMsg;
 }
 
-// 连接服务器成功（原有逻辑+广播窗口提示）
-void MainWindow::onSocketConnected()
-{
-    ui->browser_chat->append("系统：已连接到聊天服务器！");
-    // 新增：广播窗口也提示连接成功
-    ui->browser_broadcast->append("系统：已连接到聊天服务器！");
 
-    // 发送上线通知（账号格式）
-    QString onlineMsg = QString("online|%1|%2|%3")
-                            .arg(DataManager::getInstance()->getCurrentUserId())
-                            .arg(m_loginUser)
-                            .arg(m_loginUser); // 昵称暂用账号
-    m_socket->write(onlineMsg.toUtf8());
-    m_socket->flush();
-}
-
-// 接收服务器消息（核心：新增广播消息解析 + 列表刷新）
-void MainWindow::onSocketReadyRead()
-{
-    QByteArray data = m_socket->readAll();
-    QString recvData = QString::fromUtf8(data);
-    QStringList msgList = recvData.split("\n", Qt::SkipEmptyParts);
-
-    for (QString recvMsg : msgList) {
-        recvMsg = recvMsg.trimmed();
-        qDebug() << "[接收单条消息]：" << recvMsg;
-
-        // ========== 1. 解析在线列表广播（仅新增刷新） ==========
-        if(recvMsg.startsWith("SYSTEM|ONLINE_USERS")){
-            QStringList parts = recvMsg.split("|", Qt::SkipEmptyParts);
-            if (parts.size() >= 3) {
-                QStringList onlineAccounts = parts[2].split(",", Qt::SkipEmptyParts);
-                // 直接更新在线列表UI
-                m_contactModel->clear();
-                m_accountToUserId.clear();
-                for (QString account : onlineAccounts) {
-                    QStandardItem *item = new QStandardItem(account);
-                    m_contactModel->appendRow(item);
-                    m_accountToUserId[account] = 0; // 临时置空ID
-                }
-                // 新增：强制刷新ListView（仅加这两行）
-                ui->lv_contacts->update();
-                ui->lv_contacts->repaint();
-
-                qDebug() << "[手动更新在线列表]：" << onlineAccounts;
-            }
-            continue; // 解析完在线列表，跳过后续逻辑
-        }
-
-        // ========== 2. 新增：解析广播消息 ==========
-        if(recvMsg.startsWith("broadcast|")){
-            QStringList parts = recvMsg.split("|", Qt::SkipEmptyParts);
-            if(parts.size() == 3){
-                QString senderAccount = parts[1];
-                QString content = parts[2];
-                // 显示到广播窗口
-                ui->browser_broadcast->append(QString("%1（广播）：%2").arg(senderAccount).arg(content));
-            }
-            continue; // 解析完广播，跳过后续逻辑
-        }
-
-        // ========== 3. 原有私聊消息解析逻辑（不动） ==========
-        QStringList parts = recvMsg.split("|", Qt::SkipEmptyParts);
-        if(parts.size() == 2){
-            QString senderAccount = parts[0];
-            QString content = parts[1];
-            ui->browser_chat->append(QString("%1：%2").arg(senderAccount).arg(content));
-        } else if(parts.size() == 1){
-            ui->browser_chat->append(QString("系统：%1").arg(recvMsg));
-        } else {
-            ui->browser_chat->append(QString("系统：未知消息格式 - %1").arg(recvMsg));
-        }
-    }
-}
 
 // 退出登录（原有逻辑不动）
 void MainWindow::on_action_exit_login_triggered()
