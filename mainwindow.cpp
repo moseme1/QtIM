@@ -20,14 +20,6 @@ MainWindow::MainWindow(QString loginUser, QWidget *parent)
     m_contactModel = new QStandardItemModel(this);
     ui->lv_contacts->setModel(m_contactModel);
 
-    // 注释DataManager绑定（避免与服务器广播冲突，仅改这里）
-    // connect(DataManager::getInstance(), &DataManager::onlineUserUpdated, this, [=]() {
-    //     updateOnlineUserList();
-    // });
-
-    // 注释手动刷新（仅改这里）
-    // updateOnlineUserList();
-
     // ========== 2. 初始化网络连接 ==========
     m_socket = new QTcpSocket(this);
     m_socket->connectToHost("127.0.0.1", 8888);
