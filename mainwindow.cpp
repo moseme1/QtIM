@@ -133,6 +133,22 @@ void MainWindow::on_btn_broadcast_send_clicked()
     qDebug() << "[发送广播] 格式：" << broadcastMsg;
 }
 
+// 连接服务器成功（原有逻辑+广播窗口提示）
+void MainWindow::onSocketConnected()
+{
+    ui->browser_chat->append("系统：已连接到聊天服务器！");
+    // 新增：广播窗口也提示连接成功
+    ui->browser_broadcast->append("系统：已连接到聊天服务器！");
+
+    // 发送上线通知（账号格式）
+    QString onlineMsg = QString("online|%1|%2|%3")
+                            .arg(DataManager::getInstance()->getCurrentUserId())
+                            .arg(m_loginUser)
+                            .arg(m_loginUser); // 昵称暂用账号
+    m_socket->write(onlineMsg.toUtf8());
+    m_socket->flush();
+}
+
 
 
 // 退出登录（原有逻辑不动）
