@@ -15,9 +15,7 @@ DataManager::DataManager(QObject *parent) : QObject(parent)
     m_netMgr = NetworkManager::getInstance();
     m_currentUserId = -1; // 初始化当前用户ID，避免野值
 
-    // 绑定网络消息接收信号（仅绑定一次）
     connect(m_netMgr, &NetworkManager::recvMsg, this, &DataManager::onRecvNetworkMsg);
-    // 预绑定连接成功信号（避免重复绑定）
     connect(m_netMgr, &NetworkManager::connSuccess, this, &DataManager::onConnSuccess, Qt::UniqueConnection);
 }
 

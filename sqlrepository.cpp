@@ -4,7 +4,6 @@
 #include <QDebug>
 #include <QDateTime>
 
-// 数据库名称常量（需在头文件定义）
 #define DB_NAME "qt_im.db"
 
 SqlRepository::SqlRepository(QObject *parent) : QObject(parent)

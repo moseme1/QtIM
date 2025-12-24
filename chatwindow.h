@@ -18,7 +18,6 @@ class ChatWindow : public QWidget
     Q_OBJECT
 
 public:
-    // ========== 保留你原有构造函数 + 新增无参构造（兼容） ==========
     explicit ChatWindow(int userId, int friendId, QWidget *parent = nullptr);
     ~ChatWindow();
 
@@ -43,7 +42,7 @@ private:
 
     Ui::ChatWindow *ui;
     int m_userId;          // 原有：当前用户ID
-    int m_friendId;        // 原有：好友ID（复用为私聊目标ID）
+    int m_friendId;        // 原有：好友ID
     DataManager *m_dataMgr;// 原有：数据管理类
 
     // ========== 新增：私聊/在线列表相关变量 ==========
