@@ -149,7 +149,53 @@ void MainWindow::onSocketConnected()
     m_socket->flush();
 }
 
+// 接收服务器消息之列表刷新
+void MainWindow::onSocketReadyRead()
+{
+    QByteArray data = m_socket->readAll();
+    QString recvData = QString::fromUtf8(data);
+    QStringList msgList = recvData.split("\n", Qt::SkipEmptyParts);
 
+    for (QString recvMsg : msgList) {
+        recvMsg = recvMsg.trimmed();
+        qDebug() << "[接收单条消息]：" << recvMsg;
+
+        // ========== 1. 解析在线列表广播（仅新增刷新） ==========
+        if(recvMsg.startsWith("SYSTEM|ONLINE_USERS")){
+            QStringList parts = recvMsg.split("|", Qt::SkipEmptyParts);
+            if (parts.size() >= 3) {
+                QStringList onlineAccounts = parts[2].split(",", Qt::SkipEmptyParts);
+                // 直接更新在线列表UI
+                m_contactModel->clear();
+                m_accountToUserId.clear();
+                for (QString account : onlineAccounts) {
+                    QStandardItem *item = new QStandardItem(account);
+                    m_contactModel->appendRow(item);
+                    m_accountToUserId[account] = 0; // 临时置空ID
+                }
+                // 新增：强制刷新ListView（仅加这两行）
+                ui->lv_contacts->update();
+                ui->lv_contacts->repaint();
+
+                qDebug() << "[手动更新在线列表]：" << onlineAccounts;
+            }
+            continue; // 解析完在线列表，跳过后续逻辑
+        }
+
+
+        // ========== 3. 原有私聊消息解析逻辑（不动） ==========
+        QStringList parts = recvMsg.split("|", Qt::SkipEmptyParts);
+        if(parts.size() == 2){
+            QString senderAccount = parts[0];
+            QString content = parts[1];
+            ui->browser_chat->append(QString("%1：%2").arg(senderAccount).arg(content));
+        } else if(parts.size() == 1){
+            ui->browser_chat->append(QString("系统：%1").arg(recvMsg));
+        } else {
+            ui->browser_chat->append(QString("系统：未知消息格式 - %1").arg(recvMsg));
+        }
+    }
+}
 
 // 退出登录（原有逻辑不动）
 void MainWindow::on_action_exit_login_triggered()
