@@ -149,7 +149,7 @@ void MainWindow::onSocketConnected()
     m_socket->flush();
 }
 
-// 接收服务器消息之列表刷新
+// 接收服务器消息（核心：新增广播消息解析 + 列表刷新）
 void MainWindow::onSocketReadyRead()
 {
     QByteArray data = m_socket->readAll();
@@ -182,6 +182,17 @@ void MainWindow::onSocketReadyRead()
             continue; // 解析完在线列表，跳过后续逻辑
         }
 
+        // ========== 2. 新增：解析广播消息 ==========
+        if(recvMsg.startsWith("broadcast|")){
+            QStringList parts = recvMsg.split("|", Qt::SkipEmptyParts);
+            if(parts.size() == 3){
+                QString senderAccount = parts[1];
+                QString content = parts[2];
+                // 显示到广播窗口
+                ui->browser_broadcast->append(QString("%1（广播）：%2").arg(senderAccount).arg(content));
+            }
+            continue; // 解析完广播，跳过后续逻辑
+        }
 
         // ========== 3. 原有私聊消息解析逻辑（不动） ==========
         QStringList parts = recvMsg.split("|", Qt::SkipEmptyParts);
